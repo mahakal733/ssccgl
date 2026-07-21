@@ -1,0 +1,166 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SSC CGL Tracker</title>
+<style>
+body{font-family:Arial;background:#f4f6f8;padding:20px;max-width:1200px;margin:auto}
+.dark{background:#1e1e1e;color:#fff}
+.card{background:#fff;padding:15px;border-radius:12px;margin:15px 0;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.dark .card{background:#2d2d2d}
+.progress-wrap{height:20px;background:#ddd;border-radius:20px;overflow:hidden}
+.progress{height:100%;background:#28a745;width:0}
+.topic{padding:3px 0}
+button{padding:8px 12px}
+.star{color:#198754;font-weight:bold}
+</style>
+</head>
+<body>
+<h1>SSC CGL Tracker</h1>
+
+<h2>Subject-wise Teacher and Telegram Batches for Free</h2>
+
+<table border="1" cellpadding="10" cellspacing="0">
+    <thead>
+        <tr>
+            <th>Subject</th>
+            <th>Teacher Name</th>
+            <th>Batch Name</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Reasoning</td>
+            <td>Piyush Sir</td>
+            <td>ssc pratham batch 20</td>
+        </tr>
+        <tr>
+            <td>Mathematics</td>
+            <td>Abhinay sir</td>
+            <td>ssc partham batch 20</td>
+        </tr>
+        <tr>
+            <td>English</td>
+            <td>satyendra sir</td>
+            <td>ssc pratham batch 20</td>
+        </tr>
+        <tr>
+            <td>General Studies</td>
+            <td>shivant sir</td>
+            <td>ssc partham batch 20</td>
+        </tr>
+    </tbody>
+</table>
+
+
+<br>
+<br>
+
+<button onclick="resetAll()">Reset All</button>
+<label><input type="checkbox" id="dark"> Dark Mode</label>
+
+<div class="card"><h2>Main Tracker</h2>
+<div class="progress-wrap"><div class="progress" id="mainOverall"></div></div>
+<p id="mainOverallText"></p></div>
+
+<div id="main"></div>
+
+<div class="card"><h2>🚀 Quick Revision Tracker</h2>
+<div class="progress-wrap"><div class="progress" id="quickOverall"></div></div>
+<p id="quickOverallText"></p></div>
+
+<div id="quick"></div>
+
+<script>
+const subjects={
+"Mathematics":["⭐ Mensuration 2D & 3D","⭐ Geometry","⭐ Simplification","⭐ Profit & Loss","Coordinate Geometry","Partnership","Height & Distance","Ratio Proportion","Average","Algebra","Percentage","Discount","Simple Interest","Compound Interest","Mixture & Alligation","Time & Work","Time Speed & Distance","Trigonometry","Data Interpretation","Number System","HCF LCM","Surds Indices","Installment","Age","Pipes & Cistern","Race","Boat & Streams","Permutation & Combination","Probability","Statistics"],
+"Reasoning":["⭐ Missing Number Series","⭐ Mathematical Operations","⭐ Odd One Out","⭐ Analytical Reasoning","⭐ Blood Relation","Coding & Decoding","Analogy Alpha","Syllogism","Analogy Numeric","Word Formation","Analogy (Word Having Same Relationship)","Number Connection","Figure Analogy","Classification","Series","Embedded Figure","Mirror Image","Dice","Number Pairing","Sitting Arrangement & Puzzle","Paper Cutting and Folding","Calendar"],
+"General Awareness":["⭐ Static GK","⭐ Current Affairs","⭐ History","Geography","Chemistry","Polity","Economics","Biology","Physics"],
+"English":["⭐ Voice","⭐ Narration","⭐ Spotting Error","⭐ Sentence Improvement","One Word Substitution","Spelling","Fill in the Blanks","Idioms & Phrases","Synonym","Antonym","Homonyms","Cloze Test","Para Jumbles","Passages"]
+};
+
+const quick={
+"Mathematics":["⭐ Mensuration 2D & 3D","⭐ Geometry","⭐ Simplification","⭐ Profit & Loss","Coordinate Geometry","Partnership","Height & Distance","Trigonometry","Algebra"],
+"Reasoning":["⭐ Missing Number Series","⭐ Mathematical Operations","⭐ Odd One Out","⭐ Analytical Reasoning","⭐ Blood Relation","Coding & Decoding","Analogy Alpha"],
+"General Awareness":["⭐ Static GK","⭐ Current Affairs","⭐ History","Geography","Polity","Economics","Chemistry"],
+"English":["⭐ Voice","⭐ Narration","⭐ Spotting Error","⭐ Sentence Improvement","Cloze Test","One Word Substitution","Spelling","Fill in the Blanks"]
+};
+
+function build(containerId,data,prefix){
+ const root=document.getElementById(containerId);
+ Object.entries(data).forEach(([sub,topics])=>{
+  const card=document.createElement('div');
+  card.className='card';
+  card.innerHTML=`<h3>${sub}</h3><div class="progress-wrap"><div class="progress ${prefix}-bar"></div></div><p class="${prefix}-text"></p>`;
+  topics.forEach(t=>{
+   card.innerHTML+=`<div class="topic"><label><input type="checkbox" data-group="${prefix}" data-id="${prefix}-${sub}-${t}"> <span class="${t.startsWith('⭐')?'star':''}">${t}</span></label></div>`;
+  });
+  root.appendChild(card);
+ });
+}
+
+build("main",subjects,"main");
+build("quick",quick,"quick");
+
+function save(){
+ let state={};
+ document.querySelectorAll("input[data-id]").forEach(x=>state[x.dataset.id]=x.checked);
+ localStorage.setItem("sscData",JSON.stringify(state));
+ update();
+}
+
+function updateSection(prefix,overallBar,overallText){
+ let total=0,done=0;
+ document.querySelectorAll(`input[data-group='${prefix}']`).forEach(x=>{
+  total++;
+  if(x.checked) done++;
+ });
+
+ document.querySelectorAll(`#${prefix} .card`).forEach(card=>{
+   const boxes=card.querySelectorAll(`input[data-group='${prefix}']`);
+   const checked=card.querySelectorAll(`input[data-group='${prefix}']:checked`);
+   const p=Math.round((checked.length/boxes.length)*100)||0;
+   card.querySelector('.'+prefix+'-bar').style.width=p+'%';
+   card.querySelector('.'+prefix+'-text').textContent=p+'%';
+ });
+
+ const op=Math.round((done/total)*100)||0;
+ document.getElementById(overallBar).style.width=op+'%';
+ document.getElementById(overallText).textContent=`${op}% (${done}/${total})`;
+}
+
+function update(){
+ updateSection("main","mainOverall","mainOverallText");
+ updateSection("quick","quickOverall","quickOverallText");
+}
+
+function load(){
+ const state=JSON.parse(localStorage.getItem("sscData")||"{}");
+ document.querySelectorAll("input[data-id]").forEach(x=>{
+   x.checked=!!state[x.dataset.id];
+   x.addEventListener("change",save);
+ });
+ const dark=localStorage.getItem("dark")=="1";
+ document.getElementById("dark").checked=dark;
+ document.body.classList.toggle("dark",dark);
+ update();
+}
+
+document.getElementById("dark").addEventListener("change",e=>{
+ localStorage.setItem("dark",e.target.checked?"1":"0");
+ document.body.classList.toggle("dark",e.target.checked);
+});
+
+function resetAll(){
+ if(confirm("Reset all progress?")){
+  localStorage.clear();
+  location.reload();
+ }
+}
+
+load();
+</script>
+</body>
+</html>
